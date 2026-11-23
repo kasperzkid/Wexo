@@ -1,0 +1,281 @@
+@tailwind base;
+@tailwind components;
+
+@keyframes onboarding-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-9px) rotate(3deg); }
+}
+
+.onboarding-enter {
+  animation: onboarding-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.onboarding-content {
+  transition: opacity 380ms ease-in-out, transform 380ms ease-in-out, filter 380ms ease-in-out;
+}
+
+.onboarding-content-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.onboarding-content-out {
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(2px);
+}
+
+.onboarding-loading-out {
+  animation: onboarding-leave 280ms ease-in both;
+}
+
+.onboarding-icon {
+  animation: onboarding-float 3.6s ease-in-out infinite;
+}
+
+@keyframes onboarding-enter {
+  from { opacity: 0; transform: translateY(12px); filter: blur(3px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes onboarding-leave {
+  from { opacity: 1; transform: translateY(0); filter: blur(0); }
+  to { opacity: 0; transform: translateY(-8px); filter: blur(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-enter,
+  .onboarding-loading-out,
+  .onboarding-content,
+  .onboarding-icon {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  ::selection {
+    background: #AAFF45;
+    color: #0D0D0D;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F0F0EE;
+}
+::-webkit-scrollbar-thumb {
+  background: #AAFF45;
+  border-radius: 999px;
+  border: 1px solid #0D0D0D;
+}
+
+/* ── Brutalist card ── */
+.brutalist-card {
+  background: #ffffff;
+  border: 1.5px solid #0D0D0D;
+  box-shadow: 4px 4px 0px #0D0D0D;
+  border-radius: 16px;
+}
+
+.brutalist-card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.brutalist-card-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #0D0D0D;
+}
+
+/* ── Buttons ── */
+.btn-lime {
+  @apply inline-flex items-center justify-center gap-2 font-bold text-ink;
+  background: #AAFF45;
+  border: 1.5px solid #0D0D0D;
+  box-shadow: 3px 3px 0px #0D0D0D;
+  border-radius: 10px;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.btn-lime:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #0D0D0D;
+}
+.btn-lime:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #0D0D0D;
+}
+.btn-lime:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-black {
+  @apply inline-flex items-center justify-center gap-2 font-bold text-white;
+  background: #0D0D0D;
+  border: 1.5px solid #0D0D0D;
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+  border-radius: 10px;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.btn-black:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.4);
+}
+.btn-black:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 font-semibold text-ink;
+  background: transparent;
+  border: 1.5px solid #0D0D0D;
+  border-radius: 10px;
+  transition: background 0.12s;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: #F0F0EE;
+}
+
+/* ── Inputs ── */
+.brutalist-input {
+  @apply w-full text-sm text-ink bg-white;
+  border: 1.5px solid #0D0D0D;
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  transition: box-shadow 0.15s;
+  outline: none;
+}
+.brutalist-input::placeholder {
+  color: #888888;
+}
+.brutalist-input:focus {
+  box-shadow: 3px 3px 0px #AAFF45;
+  border-color: #0D0D0D;
+}
+
+select.brutalist-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230D0D0D' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 2.2rem;
+}
+
+/* ── Nav primitives ── */
+.nav-pill {
+  @apply relative inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold text-ink-muted transition-all duration-150;
+}
+.nav-pill:hover {
+  @apply text-ink;
+  background: #F0F0EE;
+}
+.nav-pill-active {
+  background: #AAFF45;
+  color: #0D0D0D;
+  border: 1px solid #0D0D0D;
+  box-shadow: 2px 2px 0px #0D0D0D;
+}
+.nav-pill-active:hover {
+  background: #AAFF45;
+  color: #0D0D0D;
+}
+
+/* ── Tab primitives ── */
+.tab-chip {
+  @apply whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-semibold text-ink-muted transition-all duration-150;
+  background: #F0F0EE;
+  border: 1.5px solid transparent;
+}
+.tab-chip:hover {
+  @apply text-ink;
+  border-color: #0D0D0D;
+}
+.tab-chip-active {
+  background: #AAFF45;
+  color: #0D0D0D;
+  font-weight: 700;
+  border: 1.5px solid #0D0D0D;
+  box-shadow: 2px 2px 0px #0D0D0D;
+}
+
+.tab-underline {
+  @apply relative pb-3 text-xs font-semibold text-ink-muted transition-colors duration-150;
+}
+.tab-underline:hover {
+  @apply text-ink;
+}
+.tab-underline-active {
+  color: #0D0D0D;
+  font-weight: 700;
+}
+.tab-underline-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5px;
+  border-radius: 999px;
+  background: #AAFF45;
+  border: 1px solid #0D0D0D;
+}
+
+/* ── Wallet adapter overrides ── */
+.wallet-adapter-button {
+  font-family: inherit !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  height: 40px !important;
+  padding: 0 1.1rem !important;
+  background: #AAFF45 !important;
+  color: #0D0D0D !important;
+  border: 1.5px solid #0D0D0D !important;
+  box-shadow: 3px 3px 0px #0D0D0D !important;
+  transition: transform 0.12s, box-shadow 0.12s !important;
+}
+.wallet-adapter-button:not([disabled]):hover {
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0px #0D0D0D !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background: #ffffff !important;
+  border: 1.5px solid #0D0D0D !important;
+  box-shadow: 6px 6px 0px #0D0D0D !important;
+  border-radius: 16px !important;
+}
+
+.wallet-adapter-modal-button-close {
+  background: #F0F0EE !important;
+  border: 1.5px solid #0D0D0D !important;
+}
+
+.wallet-adapter-modal-title {
+  color: #0D0D0D !important;
+}
+.wallet-adapter-modal-list li button {
+  color: #0D0D0D !important;
+}
+
+/* Utilities come last so utility classes on elements override the base padding
+   of custom classes (e.g. pl-10/pr-9 on the search bar input). */
+@tailwind utilities;

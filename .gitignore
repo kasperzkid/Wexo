@@ -1,0 +1,21 @@
+.anchor
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+.surfpool
+.vercel
+app/dist
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Anchor security metadata template contains placeholder contact/policy values
+/security.json
