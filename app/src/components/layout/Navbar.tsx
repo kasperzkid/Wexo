@@ -205,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
             role="dialog"
             aria-modal="true"
             aria-labelledby="wallet-picker-title"
-            className="brutalist-card w-full max-w-2xl p-5 sm:p-6"
+            className="brutalist-card w-full max-w-lg p-5 sm:p-6"
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
@@ -227,10 +227,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
               </p>
             )}
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3">
               {popularWalletAdapters.map((option) => (
-                <div key={option.name} className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-ink/15 bg-white p-3 shadow-brutal-sm transition-all hover:border-ink/50 hover:-translate-y-0.5">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-paper-gray/60 border border-ink/10 p-1.5 overflow-hidden">
+                <div key={option.name} className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-ink/15 bg-white p-3 min-h-[92px] shadow-brutal-sm transition-all hover:border-ink/50 hover:-translate-y-0.5">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-paper-gray/60 border-2 border-ink/10 p-1.5 overflow-hidden">
                     <img
                       src={option.adapter?.adapter.icon ?? option.iconUrl}
                       alt={`${option.name} logo`}
@@ -270,15 +270,15 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
             {otherWalletAdapters.length > 0 && (
               <div className="mt-4 border-t border-ink/10 pt-4">
                 <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Other detected wallets</h3>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3">
                   {otherWalletAdapters.map((item) => (
                     <button
                       key={item.adapter.name}
                       onClick={() => chooseWallet(item.adapter.name)}
                       disabled={connecting || pendingWalletName !== null}
-                      className="flex items-center gap-3 rounded-xl border-2 border-ink/15 bg-white p-3 text-left shadow-brutal-sm transition-all hover:border-ink hover:bg-paper-gray hover:-translate-y-0.5 disabled:opacity-50"
+                      className="flex items-center gap-3 rounded-xl border-2 border-ink/15 bg-white p-3 min-h-[84px] text-left shadow-brutal-sm transition-all hover:border-ink hover:bg-paper-gray hover:-translate-y-0.5 disabled:opacity-50"
                     >
-                      <img src={item.adapter.icon} alt="" className="h-9 w-9 rounded-lg" />
+                      <img src={item.adapter.icon} alt="" className="h-10 w-10 rounded-lg border-2 border-ink/10" />
                       <span className="flex-1 text-sm font-bold text-ink">{item.adapter.name}</span>
                       {pendingWalletName === item.adapter.name
                         ? <LoaderCircle className="h-4 w-4 animate-spin" />
