@@ -19,6 +19,7 @@ interface TaskContextType {
   setSortBy: (sort: 'highest_reward' | 'lowest_reward' | 'newest' | 'expiring_soon') => void;
   metrics: DashboardMetrics;
   userTransactions: TransactionRecord[];
+  allTransactions: TransactionRecord[];
   getTaskById: (id: string) => Task | undefined;
   createTask: (data: {
     title: string;
@@ -75,6 +76,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const metrics = useMemo(() => {
     return taskStore.getDashboardMetrics(publicKeyString || undefined);
   }, [tasks, publicKeyString]);
+
+  const allTransactions = useMemo(() => {
+    return taskStore.getTransactions();
+  }, [tasks]);
 
   const userTransactions = useMemo(() => {
     return taskStore.getTransactions(publicKeyString || undefined);
@@ -243,7 +248,10 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!task) throw new Error('This bounty is no longer available on Devnet. Refresh the marketplace.');
       if (!publicKey) throw new Error('Connect a signing wallet to submit work.');
       const [taskPda] = programService.deriveTaskPda(new PublicKey(task.creatorAddress), task.onChainId);
-      const payload = JSON.stringify(submission);
+      // Keep the on-chain payload compact so a useful preview URL can fit in
+      // the program's 256 byte submission field. The decoder accepts both
+      // this compact shape and the older verbose shape.
+      const payload = JSON.stringify({ p: submission.pullRequestUrl, d: submission.liveDemoUrl, n: submission.deliverableNotes, h: submission.proofAttachmentHash });
       if (Buffer.byteLength(payload, 'utf8') > 256) throw new Error('Submission details must fit within 256 bytes on-chain.');
       const txHash = await sendTransaction(await programService.buildSubmitWorkTransaction(publicKey, taskPda, payload));
       const updated = taskStore.submitWork(taskId, publicKeyString, submission, txHash);
@@ -322,6 +330,7 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSortBy,
         metrics,
         userTransactions,
+        allTransactions,
         getTaskById,
         createTask,
         claimTask,

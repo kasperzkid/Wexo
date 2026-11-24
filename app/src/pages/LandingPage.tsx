@@ -96,13 +96,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[620px] lg:max-w-[670px] md:justify-self-end">
+          <div className="relative mx-auto w-full max-w-[620px] lg:max-w-[670px] md:justify-self-center md:-translate-x-6 lg:-translate-x-10">
             <div className="absolute -inset-5 rotate-2 rounded-[2rem] border-2 border-ink/20 bg-white/25" />
             <div className="relative overflow-hidden rounded-[1.75rem] border-2 border-ink bg-[#F8F7F1] shadow-[8px_8px_0_#0D0D0D]">
               <img
                 src="/wexo-hero.png"
                 alt="Wexo bounty escrow marketplace illustration"
-                className="aspect-[1.4/1] w-full object-cover"
+                className="aspect-[1.4/1] w-full object-cover object-[30%_center]"
               />
               <div className="flex items-center justify-between border-t-2 border-ink bg-white px-4 py-3 sm:px-5">
                 <div className="flex items-center gap-2">

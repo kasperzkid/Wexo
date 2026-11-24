@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-ink/10 bg-paper/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-[60px] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-24 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
 
         {/* ── Brand ── */}
         <button
@@ -94,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
           <img
             src="/wexo-neon-lime-tech-logo.png"
             alt="Wexo logo"
-            className="h-[3.25rem] w-auto"
+            className="h-20 w-auto"
           />
         </button>
 
@@ -205,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
             role="dialog"
             aria-modal="true"
             aria-labelledby="wallet-picker-title"
-            className="brutalist-card w-full max-w-lg p-5 sm:p-6"
+            className="brutalist-card w-full max-w-2xl p-5 sm:p-6"
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
@@ -227,9 +227,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
               </p>
             )}
 
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {popularWalletAdapters.map((option) => (
-                <div key={option.name} className="flex min-w-0 items-center gap-3 rounded-xl border border-ink/15 bg-white p-3">
+                <div key={option.name} className="flex min-w-0 items-center gap-3 rounded-xl border-2 border-ink/15 bg-white p-3 shadow-brutal-sm transition-all hover:border-ink/50 hover:-translate-y-0.5">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-paper-gray/60 border border-ink/10 p-1.5 overflow-hidden">
                     <img
                       src={option.adapter?.adapter.icon ?? option.iconUrl}
@@ -270,13 +270,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
             {otherWalletAdapters.length > 0 && (
               <div className="mt-4 border-t border-ink/10 pt-4">
                 <h3 className="mb-2 text-[11px] font-bold uppercase tracking-wider text-ink-muted">Other detected wallets</h3>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {otherWalletAdapters.map((item) => (
                     <button
                       key={item.adapter.name}
                       onClick={() => chooseWallet(item.adapter.name)}
                       disabled={connecting || pendingWalletName !== null}
-                      className="flex items-center gap-3 rounded-xl border border-ink/15 bg-white p-3 text-left transition hover:border-ink hover:bg-paper-gray disabled:opacity-50"
+                      className="flex items-center gap-3 rounded-xl border-2 border-ink/15 bg-white p-3 text-left shadow-brutal-sm transition-all hover:border-ink hover:bg-paper-gray hover:-translate-y-0.5 disabled:opacity-50"
                     >
                       <img src={item.adapter.icon} alt="" className="h-9 w-9 rounded-lg" />
                       <span className="flex-1 text-sm font-bold text-ink">{item.adapter.name}</span>
@@ -290,7 +290,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, onOpenW
             )}
 
             {wallets.length === 0 && (
-              <p className="mt-4 rounded-lg bg-paper-gray px-3 py-2.5 text-xs leading-relaxed text-ink-muted">
+              <p className="mt-4 rounded-xl border-2 border-ink/10 bg-paper-gray px-3.5 py-3 text-xs leading-relaxed text-ink-muted">
                 Install a wallet extension, enable its Solana support, then refresh this page. Compatible wallets will appear as detected.
               </p>
             )}

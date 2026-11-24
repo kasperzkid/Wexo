@@ -2,7 +2,7 @@ import React from 'react';
 import { TaskStatus } from '../../types';
 
 interface StatusBadgeProps {
-  status: TaskStatus;
+  status: TaskStatus | 'closed';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -19,6 +19,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
         return { bg: 'bg-green-200 border-ink text-ink', dot: 'bg-green-700', label: 'Completed' };
       case 'cancelled':
         return { bg: 'bg-red-200 border-ink text-ink', dot: 'bg-red-600', label: 'Cancelled' };
+      case 'closed':
+        return { bg: 'bg-paper-gray border-ink text-ink-muted', dot: 'bg-ink-muted', label: 'Closed' };
       default:
         return { bg: 'bg-paper-gray border-ink text-ink', dot: 'bg-ink-muted', label: status };
     }

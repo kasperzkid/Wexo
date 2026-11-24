@@ -2,8 +2,14 @@ import { ArrowUpRight, CalendarDays, Clock3, Lock, Users } from 'lucide-react';
 import { Task } from '../types';
 import { solanaService } from '../services/solanaService';
 import { CATEGORY_META, cn, StatusBadge } from './ui';
+import { useAppWallet } from '../context/WalletContext';
 
 export function TaskCard({ task, onSelect }: { task: Task; onSelect: (id: string) => void }) {
+  const { connected, publicKeyString } = useAppWallet();
+  const canSeeSubmission = connected && !!publicKeyString && (publicKeyString === task.creatorAddress || (!!task.workerAddress && publicKeyString === task.workerAddress));
+  const viewerStatus = !canSeeSubmission
+    ? task.status === 'completed' || task.status === 'cancelled' ? 'closed' : 'open'
+    : task.status;
   const meta = CATEGORY_META[task.category];
   const deadline = solanaService.getDaysRemaining(task.deadline);
   const isUrgent = !deadline.isPast && deadline.days < 3;
@@ -20,17 +26,17 @@ export function TaskCard({ task, onSelect }: { task: Task; onSelect: (id: string
             {task.category}
           </span>
         </div>
-        <StatusBadge status={task.status} />
+        <StatusBadge status={viewerStatus} />
       </div>
 
       <h3 className="mt-4 line-clamp-2 text-[15px] font-bold leading-snug text-white group-hover:text-solana-green/90">
-        {task.title}
+        {canSeeSubmission ? task.title : viewerStatus === 'open' ? 'Open bounty' : 'Closed bounty'}
       </h3>
       <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-slate-400">
-        {task.description}
+        {canSeeSubmission ? task.description : 'Claim or open a bounty to continue.'}
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-1.5">
+      {canSeeSubmission && <div className="mt-4 flex flex-wrap gap-1.5">
         {task.tags.slice(0, 3).map((tag) => (
           <span
             key={tag}
@@ -42,7 +48,7 @@ export function TaskCard({ task, onSelect }: { task: Task; onSelect: (id: string
         {task.tags.length > 3 && (
           <span className="px-1 py-0.5 text-[10px] text-slate-500">+{task.tags.length - 3}</span>
         )}
-      </div>
+      </div>}
 
       <div className="mt-auto pt-5">
         <div className="mb-3 flex items-center justify-between border-t border-white/[0.06] pt-4">
@@ -72,9 +78,9 @@ export function TaskCard({ task, onSelect }: { task: Task; onSelect: (id: string
         <div className="flex items-center justify-between text-[11px] text-slate-500">
           <span className="inline-flex items-center gap-1.5">
             {task.workerAddress ? <Users size={12} /> : <Lock size={12} />}
-            {task.workerAddress
+            {task.workerAddress && canSeeSubmission
               ? solanaService.shortenAddress(task.workerAddress)
-              : solanaService.shortenAddress(task.creatorAddress)}
+              : canSeeSubmission ? solanaService.shortenAddress(task.creatorAddress) : 'Bounty posted'}
           </span>
           <span className="inline-flex items-center gap-1 font-semibold text-slate-400 transition group-hover:text-solana-green">
             View task <ArrowUpRight size={13} />

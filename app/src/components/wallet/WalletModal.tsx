@@ -9,11 +9,16 @@ import {
   ArrowDownLeft,
   RefreshCw,
   LogOut,
+  PlusCircle,
+  Briefcase,
+  FileCheck,
+  XCircle,
 } from 'lucide-react';
 import { useAppWallet } from '../../context/WalletContext';
 import { useTasks } from '../../context/TaskContext';
 import { solanaService } from '../../services/solanaService';
 import { getExplorerAddressUrl, getExplorerTxUrl } from '../../config/solana';
+import { TransactionRecord } from '../../types';
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -30,8 +35,18 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
     disconnectWallet,
   } = useAppWallet();
 
-  const { userTransactions } = useTasks();
+  const { userTransactions, allTransactions } = useTasks();
   const [copied, setCopied] = React.useState(false);
+  const [activityFilter, setActivityFilter] = React.useState<'all' | 'my'>(() =>
+    userTransactions.length > 0 ? 'my' : 'all'
+  );
+
+  // If user transactions update and filter is my with 0 events, but all has events, keep user updated
+  React.useEffect(() => {
+    if (userTransactions.length > 0 && activityFilter !== 'my') {
+      // User has personal transactions
+    }
+  }, [userTransactions.length]);
 
   if (!isOpen) return null;
 
@@ -41,10 +56,65 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const displayedTransactions = activityFilter === 'my' ? userTransactions : allTransactions;
+
+  const getActivityMeta = (type: TransactionRecord['type']) => {
+    switch (type) {
+      case 'create_task':
+        return {
+          label: 'Bounty Posted',
+          icon: PlusCircle,
+          badgeBg: 'bg-lime/40 text-green-900 border-green-700',
+        };
+      case 'fund_task':
+        return {
+          label: 'Escrow Funded',
+          icon: ArrowUpRight,
+          badgeBg: 'bg-paper-mid text-ink-muted border-ink/20',
+        };
+      case 'claim_task':
+        return {
+          label: 'Bounty Claimed',
+          icon: Briefcase,
+          badgeBg: 'bg-blue-100 text-blue-700 border-blue-400',
+        };
+      case 'submit_work':
+        return {
+          label: 'Work Submitted',
+          icon: FileCheck,
+          badgeBg: 'bg-purple-100 text-purple-700 border-purple-400',
+        };
+      case 'approve_work':
+        return {
+          label: 'Payment Released',
+          icon: ArrowDownLeft,
+          badgeBg: 'bg-green-100 text-green-700 border-green-500',
+        };
+      case 'cancel_task':
+        return {
+          label: 'Bounty Cancelled',
+          icon: XCircle,
+          badgeBg: 'bg-red-100 text-red-600 border-red-300',
+        };
+      case 'airdrop':
+        return {
+          label: 'Devnet Airdrop',
+          icon: ArrowDownLeft,
+          badgeBg: 'bg-green-100 text-green-700 border-green-500',
+        };
+      default:
+        return {
+          label: (type as string).replace('_', ' '),
+          icon: ArrowUpRight,
+          badgeBg: 'bg-paper-mid text-ink-muted border-ink/20',
+        };
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60">
       <div
-        className="max-w-lg w-full rounded-2xl p-6 bg-white"
+        className="max-w-4xl w-full rounded-2xl p-6 sm:p-8 bg-white"
         style={{ border: '2px solid #0D0D0D', boxShadow: '6px 6px 0px #0D0D0D' }}
       >
         {/* Header */}
@@ -67,7 +137,7 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
         </div>
 
         {connected ? (
-          <div className="space-y-5">
+          <div className="space-y-6">
             {/* Address Banner */}
             <div className="p-3.5 rounded-xl bg-paper-gray border border-ink/20 flex items-center justify-between">
               <div className="space-y-0.5">
@@ -130,64 +200,124 @@ export const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose }) => 
               </div>
             </div>
 
-            {/* Recent Wallet Transactions */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
+            {/* Recent Activity */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between gap-2 text-xs">
                 <span className="font-black text-ink uppercase tracking-wider">Recent Activity</span>
-                <span className="text-[11px] text-ink-faint font-semibold">
-                  {userTransactions.length} events
-                </span>
+                <div className="flex items-center rounded-lg bg-paper-gray border border-ink/20 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setActivityFilter('all')}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                      activityFilter === 'all'
+                        ? 'bg-ink text-lime'
+                        : 'text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    All Activity ({allTransactions.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActivityFilter('my')}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                      activityFilter === 'my'
+                        ? 'bg-ink text-lime'
+                        : 'text-ink-muted hover:text-ink'
+                    }`}
+                  >
+                    My Wallet ({userTransactions.length})
+                  </button>
+                </div>
               </div>
 
-              <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
-                {userTransactions.length === 0 ? (
-                  <div className="p-4 text-center text-xs text-ink-faint bg-paper-gray rounded-xl font-semibold">
-                    No transactions recorded yet
+              <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1">
+                {displayedTransactions.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-ink-faint bg-paper-gray rounded-xl font-semibold space-y-2">
+                    <p>
+                      {activityFilter === 'my'
+                        ? 'No transactions recorded for this wallet yet.'
+                        : 'No bounties or transactions recorded yet.'}
+                    </p>
+                    {activityFilter === 'my' && allTransactions.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setActivityFilter('all')}
+                        className="text-[11px] font-black text-green-700 hover:underline"
+                      >
+                        View {allTransactions.length} platform bounty events →
+                      </button>
+                    )}
                   </div>
                 ) : (
-                  userTransactions.map((tx) => (
-                    <div
-                      key={tx.id}
-                      className="p-2.5 rounded-xl bg-paper-gray border border-ink/20 flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-2">
-                        {tx.type === 'approve_work' || tx.type === 'airdrop' ? (
-                          <div className="w-6 h-6 rounded-lg bg-green-100 border border-green-500 text-green-700 flex items-center justify-center">
-                            <ArrowDownLeft className="w-3.5 h-3.5" />
+                  displayedTransactions.map((tx) => {
+                    const meta = getActivityMeta(tx.type);
+                    const IconComponent = meta.icon;
+                    const isMine = !!publicKeyString && (tx.fromAddress === publicKeyString || tx.toAddress === publicKeyString);
+                    const explorerUrl = tx.txHash
+                      ? getExplorerTxUrl(tx.txHash)
+                      : tx.toAddress
+                      ? getExplorerAddressUrl(tx.toAddress)
+                      : tx.fromAddress
+                      ? getExplorerAddressUrl(tx.fromAddress)
+                      : undefined;
+
+                    return (
+                      <div
+                        key={tx.id}
+                        className="p-2.5 rounded-xl bg-paper-gray border border-ink/20 flex items-center justify-between text-xs transition-colors hover:border-ink/40"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div
+                            className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${meta.badgeBg}`}
+                          >
+                            <IconComponent className="w-3.5 h-3.5" />
                           </div>
-                        ) : (
-                          <div className="w-6 h-6 rounded-lg bg-paper-mid border border-ink/20 text-ink-muted flex items-center justify-center">
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                          </div>
-                        )}
-                        <div>
-                          <div className="font-black text-ink capitalize">
-                            {tx.type.replace('_', ' ')}
-                          </div>
-                          <div className="text-[10px] text-ink-faint truncate max-w-[140px] font-semibold">
-                            {tx.taskTitle || 'Bounty Transaction'}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-black text-ink">
+                                {meta.label}
+                              </span>
+                              {activityFilter === 'all' && tx.fromAddress && (
+                                <span
+                                  className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                                    isMine
+                                      ? 'bg-lime text-ink border border-ink/30'
+                                      : 'bg-paper-mid text-ink-faint border border-ink/10'
+                                  }`}
+                                >
+                                  {isMine ? 'You' : solanaService.shortenAddress(tx.fromAddress, 4)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-ink-faint truncate max-w-[220px] sm:max-w-[420px] font-semibold">
+                              {tx.taskTitle || 'Bounty Transaction'}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="text-right">
-                        {tx.amountSol && (
-                          <div className="font-black text-ink">
-                            {solanaService.formatSol(tx.amountSol, 2)} SOL
-                          </div>
-                        )}
-                        <a
-                          href={getExplorerTxUrl(tx.txHash)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[10px] text-green-700 hover:underline flex items-center justify-end gap-0.5 font-bold"
-                        >
-                          <span>Explorer</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </a>
+                        <div className="text-right shrink-0 ml-2">
+                          {tx.amountSol !== undefined && tx.amountSol > 0 && (
+                            <div className="font-black text-ink">
+                              {solanaService.formatSol(tx.amountSol, 2)} SOL
+                            </div>
+                          )}
+                          {explorerUrl ? (
+                            <a
+                              href={explorerUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[10px] text-green-700 hover:underline flex items-center justify-end gap-0.5 font-bold"
+                            >
+                              <span>Explorer</span>
+                              <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-ink-faint font-semibold">Confirmed</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

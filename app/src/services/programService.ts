@@ -140,7 +140,13 @@ export class TaskVaultProgramService {
         let submission: Task['submission'];
         if (account.submissionData) {
           try {
-            const parsed = JSON.parse(account.submissionData) as Omit<NonNullable<Task['submission']>, 'id' | 'taskId' | 'workerAddress' | 'submittedAt' | 'status'>;
+            const raw = JSON.parse(account.submissionData) as Record<string, unknown>;
+            const parsed = {
+              pullRequestUrl: (raw.pullRequestUrl ?? raw.p) as string | undefined,
+              liveDemoUrl: (raw.liveDemoUrl ?? raw.d) as string | undefined,
+              deliverableNotes: String(raw.deliverableNotes ?? raw.n ?? ''),
+              proofAttachmentHash: (raw.proofAttachmentHash ?? raw.h) as string | undefined,
+            };
             submission = {
               ...parsed,
               id: `submission-${onChainId}`,

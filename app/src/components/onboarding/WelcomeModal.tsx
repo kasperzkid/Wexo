@@ -93,12 +93,11 @@ export const WelcomePage: React.FC<WelcomeModalProps> = ({ onChoose, onSkip }) =
     <main className="onboarding-enter flex h-screen w-full items-center overflow-hidden bg-white px-3 py-3 text-ink sm:px-6 sm:py-4">
       <section aria-labelledby="welcome-title" className="mx-auto flex h-full w-full max-w-[1600px] flex-col overflow-hidden">
         <div className="flex shrink-0 items-center justify-between border-b border-ink/10 px-4 py-2 sm:px-7 sm:py-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-ink bg-lime">
-              <ShieldCheck className="h-4 w-4 text-ink" />
-            </span>
-            <span className="text-xs font-black tracking-wide text-ink">TASKVAULT QUICK START</span>
-          </div>
+          <img
+            src="/wexo-neon-lime-tech-logo.png"
+            alt="Wexo logo"
+            className="h-24 w-auto"
+          />
           <button
             onClick={onSkip}
             className="group inline-flex items-center gap-2 rounded-xl border border-ink/15 bg-white px-3.5 py-2 text-xs font-bold text-ink-muted shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-ink hover:bg-paper-gray hover:text-ink hover:shadow-brutal-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime focus-visible:ring-offset-2"

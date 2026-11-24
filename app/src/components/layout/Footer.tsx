@@ -15,7 +15,7 @@ export const Footer: React.FC<{ onNavigate: (v: 'landing' | 'explore' | 'create'
             <img
               src="/wexo-neon-lime-tech-logo.png"
               alt="Wexo logo"
-              className="h-[3.25rem] w-auto"
+              className="h-24 w-auto"
             />
             <p className="text-xs text-ink-faint leading-relaxed">
               Get work done. Pay with confidence. Decentralized task bounty marketplace powered by

@@ -14,10 +14,14 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onSelect, onClaim }) => {
-  const { publicKeyString } = useAppWallet();
-  const isCreator = publicKeyString === task.creatorAddress;
-  const isWorker = publicKeyString === task.workerAddress;
-  const canClaim = task.status === 'open' && !isCreator;
+  const { connected, publicKeyString } = useAppWallet();
+  const isCreator = connected && !!publicKeyString && publicKeyString === task.creatorAddress;
+  const isWorker = connected && !!publicKeyString && !!task.workerAddress && publicKeyString === task.workerAddress;
+  const canSeeSubmission = isCreator || isWorker;
+  const viewerStatus = !canSeeSubmission
+    ? task.status === 'completed' || task.status === 'cancelled' ? 'closed' : 'open'
+    : task.status;
+  const canClaim = viewerStatus === 'open' && !isCreator;
 
   return (
     <article
@@ -27,21 +31,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onSelect, onClaim }) =
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <div className="flex items-center justify-between gap-2">
           <CategoryBadge category={task.category} size="sm" />
-          <StatusBadge status={task.status} size="sm" />
+          <StatusBadge status={viewerStatus} size="sm" />
         </div>
 
         <div className="mt-5 flex items-start justify-between gap-3">
           <h3 className="line-clamp-2 text-lg font-black leading-snug tracking-tight text-ink group-hover:underline">
-          {task.title}
+          {canSeeSubmission ? task.title : task.status === 'open' ? 'Open bounty' : 'Closed bounty'}
           </h3>
           <span className="shrink-0 font-mono text-[10px] text-ink-faint">#{task.onChainId}</span>
         </div>
 
         <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-ink-muted">
-          {task.description}
+          {canSeeSubmission ? task.description : 'Claim or open a bounty to continue.'}
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-1.5">
+        {canSeeSubmission && <div className="mt-4 flex flex-wrap gap-1.5">
           {task.tags.slice(0, 4).map((tag) => (
             <span
               key={tag}
@@ -55,7 +59,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onSelect, onClaim }) =
               +{task.tags.length - 4}
             </span>
           )}
-        </div>
+        </div>}
 
         <div className="mt-auto pt-5">
           <div className="flex items-end justify-between gap-3 border-t border-ink/10 pt-4">
@@ -74,11 +78,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onSelect, onClaim }) =
           </div>
 
           <div className="mt-4 flex min-h-10 items-center justify-between gap-2">
-            {task.workerAddress ? (
+            {task.workerAddress && canSeeSubmission ? (
               <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-ink-muted">
-                <User className="h-3.5 w-3.5" /> {isWorker ? 'Assigned to you' : 'Contributor assigned'}
+                <User className="h-3.5 w-3.5" /> {isWorker ? 'Assigned to you' : 'Contributor'}
               </span>
-            ) : task.status === 'open' ? (
+            ) : viewerStatus === 'open' ? (
               <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-ink-muted">
                 <ShieldCheck className="h-3.5 w-3.5" /> Funded bounty
               </span>

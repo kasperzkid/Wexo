@@ -50,9 +50,13 @@ export function TaskDetailModal({
 
   if (!task) return null;
 
-  const isCreator = !!publicKeyString && task.creatorAddress === publicKeyString;
-  const isWorker = !!publicKeyString && task.workerAddress === publicKeyString;
-  const canClaim = task.status === 'open' && !isCreator;
+  const isCreator = connected && !!publicKeyString && task.creatorAddress === publicKeyString;
+  const isWorker = connected && !!publicKeyString && !!task.workerAddress && task.workerAddress === publicKeyString;
+  const canSeeSubmission = isCreator || isWorker;
+  const viewerStatus = !canSeeSubmission
+    ? task.status === 'completed' || task.status === 'cancelled' ? 'closed' : 'open'
+    : task.status;
+  const canClaim = viewerStatus === 'open' && !isCreator;
   const canSubmit = task.status === 'in_progress' && isWorker;
   const canApprove = task.status === 'under_review' && isCreator;
   const canCancel =
@@ -90,27 +94,27 @@ export function TaskDetailModal({
     <Modal
       open
       onClose={onClose}
-      title={task.title}
+      title={canSeeSubmission ? task.title : 'Bounty details'}
       subtitle={`Task #${task.onChainId} · ${task.category}${task.createdAt ? ` · posted ${new Date(task.createdAt).toLocaleDateString()}` : ''}`}
       maxWidth="max-w-4xl"
     >
       <div className="grid gap-6 lg:grid-cols-[1fr_290px]">
         <div className="min-w-0 space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status={task.status} />
+            <StatusBadge status={viewerStatus} />
             <span className={cn('text-sm', CATEGORY_META[task.category].tint)}>
               {CATEGORY_META[task.category].icon} {task.category}
             </span>
           </div>
 
-          <section>
+          {canSeeSubmission && <section>
             <h3 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
               <FileText size={14} /> Brief
             </h3>
             <p className="text-sm leading-relaxed text-slate-300">{task.description}</p>
-          </section>
+          </section>}
 
-          {task.submissionInstructions && (
+          {canSeeSubmission && task.submissionInstructions && (
             <section className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
                 Submission requirements
@@ -121,7 +125,7 @@ export function TaskDetailModal({
             </section>
           )}
 
-          {task.submission && (
+          {task.submission && canSeeSubmission && (
             <section className="rounded-xl border border-sky-400/20 bg-sky-400/[0.04] p-4">
               <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-300">
                 <Link2 size={14} /> Submitted deliverables
@@ -326,7 +330,7 @@ export function TaskDetailModal({
                 Cancel & refund escrow
               </Button>
             )}
-            {task.status === 'completed' && (
+            {task.status === 'completed' && canSeeSubmission && (
               <div className="flex items-center justify-center gap-2 rounded-xl border border-violet-400/20 bg-violet-400/[0.06] px-4 py-3 text-xs font-semibold text-violet-300">
                 <CheckCircle2 size={15} /> Payment released to contributor
               </div>

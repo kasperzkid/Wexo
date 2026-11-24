@@ -71,7 +71,7 @@ export interface DashboardMetrics {
 export interface TransactionRecord {
   id: string;
   txHash: string;
-  type: 'fund_task' | 'claim_task' | 'submit_work' | 'approve_work' | 'cancel_task' | 'airdrop';
+  type: 'create_task' | 'fund_task' | 'claim_task' | 'submit_work' | 'approve_work' | 'cancel_task' | 'airdrop';
   taskId?: string;
   taskTitle?: string;
   amountSol?: number;

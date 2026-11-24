@@ -62,9 +62,8 @@ export const ClaimModal: React.FC<ClaimModalProps> = ({
         </div>
 
         <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-black text-ink mb-1">{task.title}</h4>
-            <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed">{task.description}</p>
+          <div className="rounded-xl border border-ink/15 bg-paper-gray p-3 text-xs leading-relaxed text-ink-muted">
+            Project details become visible after the bounty is assigned to your wallet.
           </div>
 
           <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-paper-gray border border-ink/20">

@@ -17,7 +17,7 @@ class TaskStore {
       const storedTasks = localStorage.getItem(TASKS_STORAGE_KEY);
       if (storedTasks) {
         this.tasks = (JSON.parse(storedTasks) as Task[]).filter(
-          (task) => !LEGACY_SAMPLE_IDS.has(task.id) && !!task.creationTxHash
+          (task) => !LEGACY_SAMPLE_IDS.has(task.id) && (!!task.creationTxHash || task.id.startsWith('devnet-') || !!task.escrowPda)
         );
         this.saveTasks();
       } else {
@@ -36,6 +36,8 @@ class TaskStore {
         this.transactions = [];
         this.saveTransactions();
       }
+
+      this.syncTransactionsFromTasks();
     } catch {
       this.tasks = [];
       this.transactions = [];
@@ -65,6 +67,7 @@ class TaskStore {
   public replaceTasksFromDevnet(tasks: Task[]): void {
     this.tasks = [...tasks];
     this.saveTasks();
+    this.syncTransactionsFromTasks();
   }
 
   public getTaskById(id: string): Task | undefined {
@@ -72,10 +75,117 @@ class TaskStore {
   }
 
   public getTransactions(userAddress?: string): TransactionRecord[] {
-    if (!userAddress) return [...this.transactions];
-    return this.transactions.filter(
-      (tx) => tx.fromAddress === userAddress || tx.toAddress === userAddress
+    const list = !userAddress
+      ? [...this.transactions]
+      : this.transactions.filter(
+          (tx) => tx.fromAddress === userAddress || tx.toAddress === userAddress
+        );
+    return list.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }
+
+  public syncTransactionsFromTasks(): void {
+    const existingTxTaskIds = new Set(
+      this.transactions
+        .filter((tx) => tx.type === 'create_task' || tx.type === 'fund_task')
+        .map((tx) => tx.taskId || tx.taskTitle)
     );
+
+    let added = false;
+    for (const task of this.tasks) {
+      const identifier = task.id || task.title;
+      if (!existingTxTaskIds.has(identifier)) {
+        const txHash = task.creationTxHash || task.history?.find((h) => !!h.txHash)?.txHash || '';
+        const timestamp =
+          task.createdAt ||
+          (task.onChainId >= 1_000_000_000_000 && task.onChainId <= 9_999_999_999_999
+            ? new Date(task.onChainId).toISOString()
+            : new Date().toISOString());
+
+        this.transactions.push({
+          id: `tx-task-${task.id}`,
+          txHash,
+          type: 'create_task',
+          taskId: task.id,
+          taskTitle: task.title,
+          amountSol: task.rewardSol,
+          status: 'confirmed',
+          timestamp,
+          fromAddress: task.creatorAddress,
+          toAddress: task.escrowPda,
+        });
+        existingTxTaskIds.add(identifier);
+        added = true;
+
+        if (
+          task.workerAddress &&
+          (task.status === 'in_progress' || task.status === 'under_review' || task.status === 'completed')
+        ) {
+          const claimTx = task.history?.find((h) => h.type === 'claimed');
+          this.transactions.push({
+            id: `tx-claim-${task.id}`,
+            txHash: claimTx?.txHash || '',
+            type: 'claim_task',
+            taskId: task.id,
+            taskTitle: task.title,
+            status: 'confirmed',
+            timestamp: claimTx?.timestamp || timestamp,
+            fromAddress: task.workerAddress,
+            toAddress: task.creatorAddress,
+          });
+        }
+
+        if (task.status === 'under_review' || (task.status === 'completed' && task.submission)) {
+          const submitTx = task.history?.find((h) => h.type === 'work_submitted');
+          this.transactions.push({
+            id: `tx-submit-${task.id}`,
+            txHash: submitTx?.txHash || '',
+            type: 'submit_work',
+            taskId: task.id,
+            taskTitle: task.title,
+            status: 'confirmed',
+            timestamp: task.submission?.submittedAt || submitTx?.timestamp || timestamp,
+            fromAddress: task.workerAddress || '',
+          });
+        }
+
+        if (task.status === 'completed') {
+          const approveTx = task.history?.find((h) => h.type === 'approved');
+          this.transactions.push({
+            id: `tx-approve-${task.id}`,
+            txHash: approveTx?.txHash || '',
+            type: 'approve_work',
+            taskId: task.id,
+            taskTitle: task.title,
+            amountSol: task.rewardSol,
+            status: 'confirmed',
+            timestamp: task.completedAt || approveTx?.timestamp || timestamp,
+            fromAddress: task.creatorAddress,
+            toAddress: task.workerAddress,
+          });
+        }
+
+        if (task.status === 'cancelled') {
+          const cancelTx = task.history?.find((h) => h.type === 'cancelled');
+          this.transactions.push({
+            id: `tx-cancel-${task.id}`,
+            txHash: cancelTx?.txHash || '',
+            type: 'cancel_task',
+            taskId: task.id,
+            taskTitle: task.title,
+            amountSol: task.rewardSol,
+            status: 'confirmed',
+            timestamp: cancelTx?.timestamp || timestamp,
+            fromAddress: task.escrowPda || task.creatorAddress,
+            toAddress: task.creatorAddress,
+          });
+        }
+      }
+    }
+
+    if (added) {
+      this.transactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      this.saveTransactions();
+    }
   }
 
   public recordTransaction(tx: Omit<TransactionRecord, 'id'>): TransactionRecord {
@@ -145,7 +255,7 @@ class TaskStore {
 
     this.recordTransaction({
       txHash: params.txHash,
-      type: 'fund_task',
+      type: 'create_task',
       taskId: newTask.id,
       taskTitle: newTask.title,
       amountSol: params.rewardSol,

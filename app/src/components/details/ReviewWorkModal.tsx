@@ -3,6 +3,7 @@ import { CheckCircle2, ShieldCheck, X, ExternalLink, GitPullRequest, Globe } fro
 import { Task } from '../../types';
 import { SolAmount } from '../common/SolAmount';
 import { AddressBadge } from '../common/AddressBadge';
+import { useAppWallet } from '../../context/WalletContext';
 
 interface ReviewWorkModalProps {
   task: Task | null;
@@ -17,9 +18,11 @@ export const ReviewWorkModal: React.FC<ReviewWorkModalProps> = ({
   onClose,
   onApprove,
 }) => {
+  const { connected, publicKeyString } = useAppWallet();
   const [isApproving, setIsApproving] = useState(false);
 
-  if (!isOpen || !task || !task.submission) return null;
+  const isPoster = !!connected && !!publicKeyString && !!task && publicKeyString === task.creatorAddress;
+  if (!isOpen || !task || !task.submission || !isPoster) return null;
 
   const handleApprove = async () => {
     try {

@@ -6,6 +6,7 @@ import { solanaService } from '../services/solanaService';
 import { EmptyState, STATUS_META } from './ui';
 
 const TYPE_LABEL: Record<TransactionRecord['type'], string> = {
+  create_task: 'Bounty posted',
   fund_task: 'Escrow funded',
   claim_task: 'Bounty claimed',
   submit_work: 'Work submitted',

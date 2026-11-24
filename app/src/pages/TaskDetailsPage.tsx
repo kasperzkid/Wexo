@@ -56,8 +56,12 @@ export const TaskDetailsPage: React.FC<TaskDetailsPageProps> = ({ taskId, onBack
     );
   }
 
-  const isCreator = publicKeyString === task.creatorAddress;
-  const isWorker = publicKeyString === task.workerAddress;
+  const isCreator = connected && !!publicKeyString && publicKeyString === task.creatorAddress;
+  const isWorker = connected && !!publicKeyString && !!task.workerAddress && publicKeyString === task.workerAddress;
+  const canSeeSubmission = isCreator || isWorker;
+  const viewerStatus = !canSeeSubmission
+    ? task.status === 'completed' || task.status === 'cancelled' ? 'closed' : 'open'
+    : task.status;
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-US', {
@@ -91,16 +95,16 @@ export const TaskDetailsPage: React.FC<TaskDetailsPageProps> = ({ taskId, onBack
                 <span className="font-mono text-xs text-ink-faint">#{task.onChainId}</span>
               </div>
               <div className="flex items-center gap-2">
-                <StatusBadge status={task.status} size="md" />
+                <StatusBadge status={viewerStatus} size="md" />
                 <CountdownTimer deadline={task.deadline} />
               </div>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black text-ink tracking-tight leading-snug">
-              {task.title}
+              {canSeeSubmission ? task.title : task.status === 'open' ? 'Open bounty' : 'Closed bounty'}
             </h1>
 
-            <div className="flex flex-wrap gap-2 pt-1">
+            {canSeeSubmission && <div className="flex flex-wrap gap-2 pt-1">
               {task.tags.map((tag) => (
                 <span
                   key={tag}
@@ -110,11 +114,11 @@ export const TaskDetailsPage: React.FC<TaskDetailsPageProps> = ({ taskId, onBack
                   {tag}
                 </span>
               ))}
-            </div>
+            </div>}
           </div>
 
           {/* Description Card */}
-          <div className="brutalist-card p-6 sm:p-8 space-y-4">
+          {canSeeSubmission && <div className="brutalist-card p-6 sm:p-8 space-y-4">
             <h3 className="text-sm font-black uppercase tracking-wider text-ink-muted">
               Task Specification & Scope
             </h3>
@@ -133,10 +137,35 @@ export const TaskDetailsPage: React.FC<TaskDetailsPageProps> = ({ taskId, onBack
                 </p>
               </div>
             )}
-          </div>
+          </div>}
+
+          {(isWorker || (task.status === 'open' && !isCreator) || (!canSeeSubmission && task.status !== 'open')) && (
+            <div className="brutalist-card flex items-start gap-3 p-4" style={{ background: !canSeeSubmission ? '#F4F4F0' : task.status === 'completed' ? '#DCFCE7' : task.status === 'under_review' ? '#FFEDD5' : '#F4F4F0' }}>
+              <Send className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
+              <div>
+                <p className="text-sm font-black text-ink">
+                  {!canSeeSubmission && (task.status === 'completed' || task.status === 'cancelled') && 'This bounty is closed'}{' '}
+                  {!canSeeSubmission && (task.status === 'in_progress' || task.status === 'under_review') && 'This bounty is open'}{' '}
+                  {task.status === 'open' && 'Claim this bounty to unlock project submission'}{' '}
+                  {canSeeSubmission && task.status === 'in_progress' && 'Your project is in progress'}{' '}
+                  {canSeeSubmission && task.status === 'under_review' && 'Project submitted · waiting for poster review'}{' '}
+                  {canSeeSubmission && task.status === 'completed' && 'Accepted · payout released'}{' '}
+                  {canSeeSubmission && task.status === 'cancelled' && 'This bounty was cancelled'}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+                  {!canSeeSubmission && (task.status === 'completed' || task.status === 'cancelled') && 'This bounty is no longer available to claim.'}{' '}
+                  {!canSeeSubmission && (task.status === 'in_progress' || task.status === 'under_review') && 'You can try to claim this opportunity. The on-chain program checks whether it is still available.'}{' '}
+                  {task.status === 'open' && 'After a successful claim, open this bounty and use “Submit Project for Review” to send your preview, repository, or deliverable notes.'}{' '}
+                  {canSeeSubmission && task.status === 'in_progress' && 'Use the button in the bounty panel to submit your preview link, repository, or work notes to the poster.'}{' '}
+                  {canSeeSubmission && task.status === 'under_review' && 'The poster can review your submitted deliverables and approve the work to release the escrowed payment.'}{' '}
+                  {canSeeSubmission && task.status === 'completed' && 'The poster approved your work. The bounty payment has been released to your wallet.'}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Submission Info */}
-          {task.submission && (
+          {task.submission && canSeeSubmission && (
             <div className="brutalist-card p-6 sm:p-8 space-y-4" style={{ background: '#FFF7ED' }}>
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black uppercase tracking-wider text-orange-700 flex items-center gap-2">
@@ -242,7 +271,7 @@ export const TaskDetailsPage: React.FC<TaskDetailsPageProps> = ({ taskId, onBack
             </div>
 
             <div className="pt-2 space-y-2">
-              {task.status === 'open' && !isCreator && (
+              {viewerStatus === 'open' && !isCreator && (
                 <button
                   onClick={() => setClaimModalOpen(true)}
                   className="btn-lime w-full py-3.5 text-sm"
@@ -259,7 +288,7 @@ export const TaskDetailsPage: React.FC<TaskDetailsPageProps> = ({ taskId, onBack
                   style={{ background: '#FF9933' }}
                 >
                   <Send className="w-4 h-4" />
-                  Submit Completed Work
+                  Submit Project for Review
                 </button>
               )}
 
@@ -283,14 +312,14 @@ export const TaskDetailsPage: React.FC<TaskDetailsPageProps> = ({ taskId, onBack
                 </button>
               )}
 
-              {task.status === 'completed' && (
+              {task.status === 'completed' && canSeeSubmission && (
                 <div className="p-3 text-center rounded-xl bg-green-100 border border-green-600 text-xs text-green-700 font-black flex items-center justify-center gap-2">
                   <CheckCircle2 className="w-4 h-4" />
                   Bounty Completed & Payout Released
                 </div>
               )}
 
-              {task.status === 'cancelled' && (
+              {task.status === 'cancelled' && canSeeSubmission && (
                 <div className="p-3 text-center rounded-xl bg-red-100 border border-red-500 text-xs text-red-700 font-bold">
                   This task was cancelled and refunded
                 </div>

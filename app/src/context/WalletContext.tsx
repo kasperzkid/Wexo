@@ -87,6 +87,10 @@ const CustomWalletBridge: React.FC<{ children: React.ReactNode }> = ({ children 
     if (transaction.feePayer && !transaction.feePayer.equals(realPublicKey)) {
       throw new Error('The transaction fee payer does not match your connected wallet.');
     }
+    const payerBalance = await connection.getBalance(realPublicKey, 'confirmed');
+    if (payerBalance === 0) {
+      throw new Error('Your wallet has no SOL on Devnet, so it cannot pay the transaction fee. Get Devnet SOL from https://faucet.solana.com, then retry the claim.');
+    }
     const simulation = await connection.simulateTransaction(transaction);
     if (simulation.value.err) {
       throw new Error(

@@ -34,8 +34,8 @@ export const SubmitWorkModal: React.FC<SubmitWorkModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!notes.trim()) {
-      setError('Please provide deliverable notes explaining your completed work.');
+    if (!notes.trim() && !prUrl.trim() && !demoUrl.trim() && !proofHash.trim()) {
+      setError('Add a preview or repository link, proof, or a short note about your work.');
       return;
     }
 
@@ -104,7 +104,7 @@ export const SubmitWorkModal: React.FC<SubmitWorkModalProps> = ({
           <div>
             <label className="block text-xs font-black text-ink mb-1.5 flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5" />
-              Live Demo or Preview Link (Optional)
+              Live Demo or Preview Link
             </label>
             <input
               type="url"
@@ -118,7 +118,7 @@ export const SubmitWorkModal: React.FC<SubmitWorkModalProps> = ({
           <div>
             <label className="block text-xs font-black text-ink mb-1.5 flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5" />
-              Deliverable Notes & Verification Proof *
+              Deliverable Notes & Verification Proof (Optional with a link)
             </label>
             <textarea
               rows={4}
@@ -126,7 +126,6 @@ export const SubmitWorkModal: React.FC<SubmitWorkModalProps> = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Detail what was built, test coverage, deployment steps, and verification proofs..."
               className="brutalist-input text-xs resize-none"
-              required
             />
           </div>
 

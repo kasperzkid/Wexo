@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 export type Tab = 'marketplace' | 'dashboard' | 'activity';
 
 export const STATUS_META: Record<
-  TaskStatus,
+  TaskStatus | 'closed',
   { label: string; badge: string; dot: string; bar: string }
 > = {
   open: {
@@ -44,6 +44,12 @@ export const STATUS_META: Record<
     dot: 'bg-slate-500',
     bar: 'bg-slate-500',
   },
+  closed: {
+    label: 'Closed',
+    badge: 'bg-slate-500/10 text-slate-400 border-slate-500/25',
+    dot: 'bg-slate-500',
+    bar: 'bg-slate-500',
+  },
 };
 
 export const CATEGORY_META: Record<TaskCategory, { icon: string; tint: string }> = {
@@ -55,7 +61,7 @@ export const CATEGORY_META: Record<TaskCategory, { icon: string; tint: string }>
   'Full Stack': { icon: '▣', tint: 'text-cyan-300' },
 };
 
-export function StatusBadge({ status, className }: { status: TaskStatus; className?: string }) {
+export function StatusBadge({ status, className }: { status: TaskStatus | 'closed'; className?: string }) {
   const meta = STATUS_META[status];
   return (
     <span
